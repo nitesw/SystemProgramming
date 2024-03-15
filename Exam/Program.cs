@@ -47,8 +47,9 @@ namespace Exam
                     Console.WriteLine($"Press 'Esc' to stop search.\n");
                     DrawProgressBar(process, files.Count());
                     Console.WriteLine($"Searching through file '{file}'...");
-                    await Task.Delay(50);
+                    await Task.Delay(100);
                     bool foundInFile = false;
+                    bool repeatFile = false;
                     int count = 0;
 
                     foreach (var line in File.ReadLines(file))
@@ -62,8 +63,19 @@ namespace Exam
                         if (line.Contains(word))
                         {
                             count++;
-                            foundWords.Add(new FoundWord { FileName = Path.GetFileName(file), FilePath = file, Count = count }); ;
-                            foundInFile = true;
+                            for (int i = 0; i < foundWords.Count; i++)
+                            {
+                                if (foundWords[i].FileName == Path.GetFileName(file))
+                                {
+                                    foundWords[i].Count++;
+                                    repeatFile = true;
+                                }
+                            }
+                            if(!repeatFile)
+                            {
+                                foundWords.Add(new FoundWord { FileName = Path.GetFileName(file), FilePath = file, Count = count }); ;
+                                foundInFile = true;
+                            }
                         }
                     }
 
@@ -77,7 +89,7 @@ namespace Exam
                     {
                         Console.BackgroundColor = ConsoleColor.DarkRed;
                         Console.WriteLine($"Word [{word}] was not found in '{file}'");
-                        await Task.Delay(100);
+                        await Task.Delay(200);
                         Console.BackgroundColor = ConsoleColor.Black;
                         Console.Clear();
                     }
@@ -85,7 +97,7 @@ namespace Exam
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGreen;
                         Console.WriteLine($"Word [{word}] was found in '{file}'");
-                        await Task.Delay(100);
+                        await Task.Delay(200);
                         Console.BackgroundColor = ConsoleColor.Black;
                         Console.Clear();
                     }
