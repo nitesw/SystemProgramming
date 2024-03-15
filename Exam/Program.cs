@@ -12,6 +12,7 @@ namespace Exam
     internal class Program
     {
         private static bool stopSearch = false;
+        private static List<string> filesPath = new List<string>();
 
         static void DrawProgressBar(int process, int total)
         {
@@ -38,7 +39,7 @@ namespace Exam
             List<FoundWord> foundWords = new List<FoundWord>();
             string choice = string.Empty;
             int process = 0;
-            var files = Directory.EnumerateFiles(path, "*.txt", SearchOption.AllDirectories);
+            var files = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories);
 
             try
             {
@@ -49,7 +50,7 @@ namespace Exam
                     Console.WriteLine($"Searching through file '{file}'...");
                     await Task.Delay(100);
                     bool foundInFile = false;
-                    bool repeatFile = false;
+                    bool repeatInFile = false;
                     int count = 0;
 
                     foreach (var line in File.ReadLines(file))
@@ -68,11 +69,12 @@ namespace Exam
                                 if (foundWords[i].FileName == Path.GetFileName(file))
                                 {
                                     foundWords[i].Count++;
-                                    repeatFile = true;
+                                    repeatInFile = true;
                                 }
                             }
-                            if(!repeatFile)
+                            if(!repeatInFile)
                             {
+                                filesPath.Add(file);
                                 foundWords.Add(new FoundWord { FileName = Path.GetFileName(file), FilePath = file, Count = count }); ;
                                 foundInFile = true;
                             }
@@ -139,8 +141,12 @@ namespace Exam
                 mail.Subject = "Results";
 
                 var bodyBuilder = new BodyBuilder();
-                bodyBuilder.TextBody = "Some info which I found: ";
+                bodyBuilder.TextBody = "Some info which I found is in !FoundWords.json file";
                 bodyBuilder.Attachments.Add(path);
+                foreach (var file in filesPath)
+                {
+                    bodyBuilder.Attachments.Add(file);
+                }
                 mail.Body = bodyBuilder.ToMessageBody();
 
                 using (var client = new ImapClient())
@@ -220,8 +226,8 @@ namespace Exam
                             else
                             {
                                 Console.Clear();
-                                await SaveToFile(result, "Words.json");
-                                await SendToEmail("Words.json", "sendingmails@ukr.net", "r3LkTddNciFBAwoq", "sendingmails@ukr.net");
+                                await SaveToFile(result, "!FoundWords.json");
+                                await SendToEmail("!FoundWords.json", "sendingmails@ukr.net", "r3LkTddNciFBAwoq", "sendingmails@ukr.net");
                                 }
                             break;
                     }
